@@ -23,7 +23,7 @@ lottie_laptop = load_lottieurl(lottie_url)
 
 # 3. Load Model aur Encoders
 # Ensure karein ki ye files aapke folder mein hain
-model = joblib.load("Pc_price_prediction.pkl")
+model = joblib.load("laptop_price_prediction.pkl") # Ab ye sahi hai
 encoder_cpu = joblib.load("cpu_encoder.pkl")
 encoder_gpu = joblib.load("gpu_encoder.pkl")
 
@@ -62,3 +62,4 @@ if st.button("Predict Price", use_container_width=True):
     # Display Result
     st.balloons() # Celebration effect!
     st.success(f"### Estimated Price: ₹{int(prediction[0]):,}")
+
