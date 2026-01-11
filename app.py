@@ -7,130 +7,138 @@ import random
 import os
 from streamlit_lottie import st_lottie
 
-# 1. Page Configuration
+# 1. Page Configuration (Wide layout for Amazon look)
 st.set_page_config(page_title="Laptop Price Expert", layout="wide", page_icon="💻")
 
-# 2. Advanced CSS for Amazon-style Product Cards
+# 2. Custom CSS for Amazon-style Product Cards
 st.markdown("""
     <style>
     .main { background-color: #f1f3f6; }
-    .stButton>button { background-color: #febd69; color: black; border-radius: 5px; border: 1px solid #a88734; font-weight: bold; width: 100%; height: 50px; }
-    .stButton>button:hover { background-color: #f3a847; }
+    .stButton>button { background-color: #febd69; color: black; border-radius: 5px; border: 1px solid #a88734; font-weight: bold; }
+    .stButton>button:hover { background-color: #f3a847; border: 1px solid #846a29; }
     .card {
-        background-color: white; padding: 15px; border-radius: 12px;
-        border: 1px solid #ddd; text-align: center; margin-bottom: 20px;
-        height: 480px; transition: 0.3s; position: relative;
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        text-align: center;
+        margin-bottom: 20px;
+        height: 450px;
+        transition: transform 0.2s;
     }
-    .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    .card img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
-    .price-tag { color: #B12704; font-size: 24px; font-weight: bold; margin-top: 5px; }
-    .brand-tag { position: absolute; top: 10px; left: 10px; background: #232f3e; color: white; padding: 2px 10px; border-radius: 4px; font-size: 12px; }
+    .card:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .card img {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        margin-bottom: 10px;
+    }
+    .price-tag { color: #B12704; font-size: 22px; font-weight: bold; margin-top: 10px; }
+    .laptop-name { font-size: 16px; font-weight: bold; height: 45px; overflow: hidden; margin-bottom: 5px; }
+    .specs-text { font-size: 13px; color: #565959; height: 40px; overflow: hidden; }
     </style>
     """, unsafe_allow_html=True)
 
 # 3. Helper Functions
 @st.cache_data
 def load_data():
-    return pd.read_csv("https://raw.githubusercontent.com/campusx-official/laptop-price-predictor-regression-project/main/laptop_data.csv")
+    url = "https://raw.githubusercontent.com/campusx-official/laptop-price-predictor-regression-project/main/laptop_data.csv"
+    return pd.read_csv(url)
 
 def load_lottieurl(url):
     try:
-        r = requests.get(url, timeout=5)
+        r = requests.get(url)
         return r.json() if r.status_code == 200 else None
-    except: return None
+    except:
+        return None
+
+def load_model_files(file_name):
+    if os.path.exists(file_name):
+        return joblib.load(file_name)
+    else:
+        st.error(f"File '{file_name}' not found. Please check GitHub!")
+        st.stop()
 
 # 4. Loading Resources
 df = load_data()
-model = joblib.load("laptop_price_prediction.pkl")
-encoder_cpu = joblib.load("cpu_encoder.pkl")
-encoder_gpu = joblib.load("gpu_encoder.pkl")
+model = load_model_files("laptop_price_prediction.pkl")
+encoder_cpu = load_model_files("cpu_encoder.pkl")
+encoder_gpu = load_model_files("gpu_encoder.pkl")
 
-# Realistic High-Quality Image Mapping
+# Random Animations List
+lottie_urls = [
+    "https://lottie.host/85a1936c-2f96-4191-bc10-097587841c62/An2Bv8K763.json",
+    "https://lottie.host/5db43163-4819-487e-977a-a4869894e637/7KOnzS4I5X.json",
+    "https://lottie.host/869c9b14-8f4d-4581-9b7e-96696775677d/9u0qG1w3yK.json"
+]
+selected_ani = load_lottieurl(random.choice(lottie_urls))
+
+# Realistic Image Mapping for Brands
 brand_images = {
-    "Apple": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80",
-    "Dell": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=400&q=80",
-    "HP": "https://images.unsplash.com/photo-1589561084283-930aa7b1ce50?auto=format&fit=crop&w=400&q=80",
-    "Lenovo": "https://images.unsplash.com/photo-1611078489935-0cb964de46d6?auto=format&fit=crop&w=400&q=80",
-    "Asus": "https://images.unsplash.com/photo-1544117518-3baf352aa202?auto=format&fit=crop&w=400&q=80",
-    "MSI": "https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?auto=format&fit=crop&w=400&q=80",
-    "Acer": "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&w=400&q=80"
+    "Apple": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400",
+    "Dell": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400",
+    "HP": "https://images.unsplash.com/photo-1589561084283-930aa7b1ce50?w=400",
+    "Lenovo": "https://images.unsplash.com/photo-1611078489935-0cb964de46d6?w=400",
+    "Asus": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400",
+    "MSI": "https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?w=400",
+    "Acer": "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400"
 }
-default_img = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=400&q=80"
-
-# Processor Safe Mapping
-cpu_map = {
-    "Intel Core i9": "Intel Core i7", "Intel Core i7": "Intel Core i7",
-    "Intel Core i5": "Intel Core i5", "Intel Core i3": "Intel Core i3",
-    "AMD Ryzen 9": "AMD Ryzen 7", "AMD Ryzen 7": "AMD Ryzen 7",
-    "AMD Ryzen 5": "AMD Ryzen 5", "Other Intel Processor": "Other Intel Processor",
-    "Other AMD Processor": "Other AMD Processor"
-}
+default_img = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400"
 
 # --- MAIN UI ---
-st.title("💻 2026 Ultimate Laptop Price Predictor")
+st.title("💻 Ultimate Laptop Price Predictor")
+st.write("Get AI-powered price estimates and shop recommendations instantly.")
 
-c_main_1, c_main_2 = st.columns([1, 2])
-with c_main_1:
-    ani = load_lottieurl("https://lottie.host/85a1936c-2f96-4191-bc10-097587841c62/An2Bv8K763.json")
-    if ani: st_lottie(ani, height=280)
+col_main_1, col_main_2 = st.columns([1, 2])
 
-with c_main_2:
+with col_main_1:
+    if selected_ani:
+        st_lottie(selected_ani, height=250, key="main_ani")
+
+with col_main_2:
     st.subheader("Select Specifications")
-    i1, i2 = st.columns(2)
-    with i1:
-        purpose = st.selectbox("Primary Use", ["Gaming", "Editing", "Corporate", "Multi-tasking"])
-        ram = st.selectbox("RAM (GB)", [8, 16, 32, 64, 128], index=1)
-    with i2:
-        cpu_choice = st.selectbox("Processor", list(cpu_map.keys()))
+    c1, c2 = st.columns(2)
+    with c1:
+        ram = st.selectbox("RAM (GB)", [2, 4, 8, 16, 32, 64], index=2)
+        weight = st.number_input("Weight (kg)", 0.5, 5.0, 1.5, step=0.1)
+    with c2:
+        cpu = st.selectbox("Processor", encoder_cpu.classes_)
         gpu = st.selectbox("Graphics Card", encoder_gpu.classes_)
-    
-    refresh = st.select_slider("Display Refresh Rate", options=["60Hz", "90Hz", "120Hz", "144Hz", "165Hz", "240Hz"])
 
-# PREDICTION
-if st.button("Predict Price & Show Best Deals"):
-    # Professional Click Sound
-    st.components.v1.html("""<audio autoplay><source src="https://www.soundjay.com/communication/sounds/selection-sounds-01.mp3"></audio>""", height=0)
-    
-    # ML Logic (Weight default set to 1.8 for stability)
-    cpu_safe = cpu_map[cpu_choice]
-    cpu_enc = encoder_cpu.transform([cpu_safe])[0]
+# PREDICTION BUTTON
+if st.button("Predict Price & Show Deals", use_container_width=True):
+    # ML Logic
+    cpu_enc = encoder_cpu.transform([cpu])[0]
     gpu_enc = encoder_gpu.transform([gpu])[0]
-    
-    # Predict
-    raw_pred = model.predict(np.array([[ram, 1.8, cpu_enc, gpu_enc]]))[0]
-    
-    # Calibration
-    bonus = 0
-    if "i9" in cpu_choice or "Ryzen 9" in cpu_choice: bonus += 35000
-    if "Gaming" in purpose: bonus += 12000
-    if "144Hz" in refresh: bonus += 7000
-    
-    final_price = int((raw_pred * 1.10) + bonus)
+    input_data = np.array([[ram, weight, cpu_enc, gpu_enc]])
+    pred_price = int(model.predict(input_data)[0])
     
     st.balloons()
-    st.markdown(f"<h2 style='text-align: center; color: #232f3e;'>Estimated 2026 Price: ₹{final_price:,}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center; color: #232f3e;'>Estimated Market Price: ₹{pred_price:,}</h2>", unsafe_allow_html=True)
     
     st.markdown("---")
-    st.subheader("🛒 Personalized Recommendations")
+    st.subheader("🛒 Recommended Laptops in this Range")
     
-    # Recommendation Filtering
-    df['diff'] = abs(df['Price'] - (final_price/1.10))
-    suggestions = df.sort_values('diff').head(4)
+    # Filter Similar Laptops (+/- 10000 range)
+    suggestions = df[(df['Price'] >= pred_price - 10000) & (df['Price'] <= pred_price + 10000)].sample(min(4, len(df)))
     
     cols = st.columns(4)
     for i, (idx, row) in enumerate(suggestions.iterrows()):
         brand = row['Company']
-        img_url = brand_images.get(brand, default_img)
+        img = brand_images.get(brand, default_img)
         
         with cols[i]:
             st.markdown(f"""
                 <div class="card">
-                    <div class="brand-tag">{brand}</div>
-                    <img src="{img_url}">
-                    <div style="font-weight:bold; height:45px; overflow:hidden;">{brand} {row['TypeName']}</div>
-                    <div style="font-size:12px; color:#565959; margin-top:5px;">{row['Cpu']}<br>RAM: {row['Ram']}</div>
-                    <div class="price-tag">₹{int(row['Price'] * 1.10):,}/-</div>
+                    <img src="{img}">
+                    <div class="laptop-name">{brand} {row['TypeName']}</div>
+                    <div class="specs-text">{row['Cpu']}<br>RAM: {row['Ram']}</div>
+                    <div class="price-tag">₹{int(row['Price']):,}</div>
                 </div>
                 """, unsafe_allow_html=True)
-            search_url = f"https://www.amazon.in/s?k={brand}+{row['TypeName']}+{purpose}".replace(" ", "+")
-            st.link_button("View on Amazon", search_url, use_container_width=True)
+            # Amazon direct search link
+            search_query = f"https://www.amazon.in/s?k={brand}+{row['TypeName']}".replace(" ", "+")
+            st.link_button(f"View on Amazon", search_query, use_container_width=True)
+
+st.markdown("---")
+st.caption("Data source: Laptop Price Dataset | Model: Random Forest Regressor")
