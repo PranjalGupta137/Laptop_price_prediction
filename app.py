@@ -13,12 +13,12 @@ st.markdown("""
     <style>
     .stApp { background-color: #0f1111; color: white; }
     
-    /* Welcome Screen Spacing */
+    /* Welcome Screen Spacing - Shifting higher */
     .welcome-container {
         text-align: center; padding: 60px; 
         background: linear-gradient(45deg, #232f3e, #000000);
         border-radius: 25px; border: 2px solid #febd69; 
-        margin: 5% auto; /* Thoda upar kar diya */
+        margin: 3% auto; /* Uper shift kiya */
         max-width: 850px;
     }
 
@@ -26,10 +26,12 @@ st.markdown("""
     .main-header {
         text-align: center; 
         color: #febd69; 
-        margin-top: 40px; /* Chipakne se bachane ke liye gap */
-        margin-bottom: 30px;
-        font-size: 45px;
-        font-weight: bold;
+        margin-top: 20px; /* Thoda gap top se */
+        margin-bottom: 25px;
+        font-size: 48px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 2px;
     }
 
     /* Card Styling */
@@ -45,15 +47,15 @@ st.markdown("""
     .laptop-name { font-size: 20px !important; font-weight: 900 !important; color: #111; }
     .price-tag { color: #B12704; font-size: 24px !important; font-weight: 900 !important; }
 
-    /* Info Box */
-    .info-box {
+    /* About Developer Box - Making it prominent */
+    .dev-box {
         background-color: #1e293b; padding: 25px; border-radius: 15px;
-        border: 1px solid #334155; margin-top: 10px;
+        border-left: 5px solid #febd69; line-height: 1.7;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Audio Logic
+# 3. Sound Logic
 def get_audio_html(file_path):
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -95,12 +97,11 @@ else:
     df, model, encoder_cpu, encoder_gpu = load_all()
     cpu_safe_map = {"Intel Core i9":"Intel Core i7", "Intel Core i7":"Intel Core i7", "Intel Core i5":"Intel Core i5", "Intel Core i3":"Intel Core i3", "AMD Ryzen 9":"AMD Ryzen 7", "AMD Ryzen 7":"AMD Ryzen 7", "AMD Ryzen 5":"AMD Ryzen 5"}
 
-    # Diamond Hata diya aur class add ki for spacing
     st.markdown("<div class='main-header'>Laptop Price Prediction Dashboard</div>", unsafe_allow_html=True)
     
     c1, c2 = st.columns([1, 2.5])
     with c1:
-        st.markdown("### ⚙️ Hardware")
+        st.markdown("### ⚙️ Select Hardware")
         ram = st.selectbox("RAM (GB)", [4, 8, 16, 32, 64], index=1)
         cpu_choice = st.selectbox("Processor", list(cpu_safe_map.keys()))
         gpu = st.selectbox("GPU", list(encoder_gpu.classes_))
@@ -115,7 +116,7 @@ else:
             final_p = int(raw_p * 1.02)
             
             st.markdown(f"<div style='text-align:center; background:#1e293b; padding:25px; border-radius:15px; border:2px solid #febd69;'>"
-                        f"<h1 style='color:#febd69; font-size:60px; margin:0;'>₹{final_p:,}</h1>"
+                        f"<h1 style='color:#febd69; font-size:65px; margin:0;'>₹{final_p:,}</h1>"
                         f"<p style='color:white;'>Predicted Fair Market Price</p></div>", unsafe_allow_html=True)
             
             st.markdown("---")
@@ -130,28 +131,45 @@ else:
                     st.link_button("Buy Link", f"https://www.amazon.in/s?k={row['Company']}+laptop")
         else:
             st.markdown("""
-                <div class="info-box">
-                    <h3>🔍 Analysis Overview</h3>
-                    <p>This AI model has been engineered to process multiple hardware parameters and provide an unbiased valuation.</p>
+                <div style="background:#1e293b; padding:30px; border-radius:15px; border:1px solid #334155;">
+                    <h3 style='color:#febd69;'>🔍 AI Market Analysis</h3>
+                    <p>Welcome to the most advanced Laptop Price Estimator of 2026. This system uses deep machine learning to analyze hardware specifications and provide current market value instantly.</p>
                     <hr style="border-color: #334155;">
-                    <h3>📈 Market Tips</h3>
-                    <p>• 16GB RAM is highly recommended for 2026 multitasking.<br>• SSD storage is 10x faster for boot speeds.</p>
+                    <p><b>Note:</b> Prices are estimated based on real-world datasets and inflation trends. Always verify before buying.</p>
                 </div>
             """, unsafe_allow_html=True)
 
-    # --- FOOTER ---
-    st.markdown("<br><hr>", unsafe_allow_html=True)
-    f1, f2 = st.columns(2)
+    # --- FOOTER SECTION ---
+    st.markdown("<br><br><hr>", unsafe_allow_html=True)
+    f1, f2 = st.columns([1.5, 1])
+    
     with f1:
-        st.markdown('<p style="color:#febd69; font-size:22px; font-weight:bold;">👨‍💻 About Developer</p>', unsafe_allow_html=True)
-        st.markdown("<p style='color:#ccc;'><b>Pranjal Gupta</b> is a Data Scientist and AI Architect. He builds smart tools to help people make better tech decisions.</p>", unsafe_allow_html=True)
+        st.markdown('<p style="color:#febd69; font-size:24px; font-weight:bold;">👨‍💻 Meet the Developer</p>', unsafe_allow_html=True)
+        st.markdown("""
+            <div class="dev-box">
+                <p style='color:#fff; font-size:17px;'>
+                <b>Pranjal Gupta</b> is a High-Impact Data Scientist and Machine Learning Specialist. 
+                With a passion for building intelligent systems, he has developed this AI to bridge the gap between complex 
+                hardware data and user-friendly price predictions. 
+                <br><br>
+                His expertise lies in <b>Predictive Modeling, UI/UX Design, and Data Integrity.</b> 
+                Pranjal is dedicated to creating tech solutions that are not only powerful but also accessible to everyone.
+                <br><br>
+                📫 <b>Direct Email:</b> pranjal12345786@gmail.com
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
     with f2:
-        st.markdown('<p style="color:#febd69; font-size:22px; font-weight:bold;">📧 Feedback</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#febd69; font-size:24px; font-weight:bold;">📧 Feedback & Query</p>', unsafe_allow_html=True)
         with st.form("feedback_form", clear_on_submit=True):
-            u_name = st.text_input("Name")
-            u_email = st.text_input("Email")
-            u_msg = st.text_area("Message")
-            if st.form_submit_button("Submit"):
-                st.success("Feedback sent!")
+            u_name = st.text_input("Full Name")
+            u_email = st.text_input("Your Email")
+            u_msg = st.text_area("How can I help you?")
+            if st.form_submit_button("🚀 Submit to Pranjal"):
+                # FormSubmit trigger
+                trigger = f"""<form action="https://formsubmit.co/pranjal12345786@gmail.com" method="POST" style="display:none;" id="form"><input type="text" name="name" value="{u_name}"><input type="email" name="email" value="{u_email}"><input type="text" name="msg" value="{u_msg}"></form><script>document.getElementById('form').submit();</script>"""
+                st.components.v1.html(trigger, height=0)
+                st.success("Redirecting...")
 
-    st.markdown('<p style="text-align:center; color:#444; margin-top:30px;">© 2026 | Built by Pranjal Gupta</p>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center; color:#444; margin-top:50px;">© 2026 | Engineered with Precision by Pranjal Gupta</p>', unsafe_allow_html=True)
