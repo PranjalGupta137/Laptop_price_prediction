@@ -12,10 +12,9 @@ st.set_page_config(page_title="2026 Laptop AI", layout="wide", page_icon="💻")
 # 2. Custom CSS
 st.markdown("""
     <style>
-    .main { background-color: #f1f3f6; }
     .card {
         background-color: white; padding: 20px; border-radius: 12px;
-        border: 1px solid #ddd; text-align: center; height: 540px;
+        border: 1px solid #ddd; text-align: center; height: 550px;
         transition: 0.3s; position: relative;
     }
     .brand-tag {
@@ -24,7 +23,6 @@ st.markdown("""
         border-radius: 5px; font-size: 11px; font-weight: bold;
     }
     .price-tag { color: #B12704; font-size: 26px; font-weight: bold; }
-    .purpose-tag { color: #007185; font-size: 14px; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -39,95 +37,90 @@ def load_all():
 
 df, model, encoder_cpu, encoder_gpu = load_all()
 
-# 4. SAFE MAPPING (Sirf wahi keys use karein jo .pkl mein hain)
-# Format: "Dropdown Name": "Original Name for Encoder"
+# --- ACCURACY FIX: Encoder Overriding ---
+# Hum encoder mein naye processors ko add kar rahe hain taaki crash na ho
+new_labels = ["Intel Core i9", "AMD Ryzen 9", "Intel Core Ultra 7", "Intel Core Ultra 5"]
+encoder_cpu.classes_ = np.unique(np.concatenate((encoder_cpu.classes_, new_labels)))
+
+# 4. Processor Mapping (Full Names)
 cpu_display_map = {
-    "Intel Core i9-14980HX / Ultra 9 (2025 Extreme)": "Intel Core i7", # Map to i7 for model, add bonus in logic
-    "Intel Core i7-13700H / Ultra 7 (Pro Editing)": "Intel Core i7",
-    "Intel Core i5-13500H / Ultra 5 (Multitasking)": "Intel Core i5",
-    "AMD Ryzen 9 8945HS / 7945HX (God Mode)": "AMD Ryzen 7", # Map to Ryzen 7, add bonus
-    "AMD Ryzen 7 8845HS / 7840HS (Creator)": "AMD Ryzen 7",
-    "AMD Ryzen 5 7640HS / 5600H (Value)": "AMD Ryzen 5",
-    "Intel Core i3-1315U (Basic Work)": "Intel Core i3",
-    "Intel Celeron / Pentium / Core Ultra 3": "Other Intel Processor",
-    "AMD Ryzen 3 / Athlon / Budget AMD": "Other AMD Processor"
+    "Intel Core i9": "Intel Core i9-14980HX (Extreme Gaming)",
+    "Intel Core i7": "Intel Core i7-13700H (High Performance)",
+    "Intel Core i5": "Intel Core i5-13500H (Mainstream)",
+    "AMD Ryzen 9": "AMD Ryzen 9 8945HS (Professional)",
+    "AMD Ryzen 7": "AMD Ryzen 7 7840HS (Creator)",
+    "AMD Ryzen 5": "AMD Ryzen 5 5600H (Budget Performance)",
+    "Intel Core i3": "Intel Core i3-1215U (Basic)",
+    "Other Intel Processor": "Intel Celeron / Pentium",
+    "Other AMD Processor": "AMD Ryzen 3 / Athlon"
 }
 
 # --- MAIN UI ---
 st.title("🚀 Next-Gen Laptop AI Advisor 2026")
 
-col_l, col_r = st.columns([1, 2])
-with col_l:
-    try:
-        res = requests.get("https://lottie.host/85a1936c-2f96-4191-bc10-097587841c62/An2Bv8K763.json")
-        st_lottie(res.json(), height=300)
-    except: st.write("💻")
+c1, c2 = st.columns([1, 2])
+with c1:
+    st_lottie(requests.get("https://lottie.host/85a1936c-2f96-4191-bc10-097587841c62/An2Bv8K763.json").json(), height=300)
 
-with col_r:
-    st.subheader("Select Your Requirements")
-    c1, c2 = st.columns(2)
-    with c1:
-        purpose = st.selectbox("Primary Use Case", ["Professional Editing", "Hardcore Gaming", "Corporate/Business", "Multi-tasking Mix"])
-        ram = st.selectbox("RAM Size", [8, 16, 32, 64, 128], index=1)
-        refresh_rate = st.selectbox("Display Refresh Rate", ["60Hz", "90Hz", "120Hz", "144Hz", "165Hz", "240Hz+"])
-    with c2:
-        cpu_choice = st.selectbox("Processor (All New 2025-26)", list(cpu_display_map.keys()))
-        cpu_orig = cpu_display_map[cpu_choice] # Get the SAFE name for encoder
-        gpu = st.selectbox("Graphics Card", encoder_gpu.classes_)
-        weight = st.slider("Laptop Weight (kg)", 0.9, 4.0, 1.8)
+with c2:
+    st.subheader("Select Specifications")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        purpose = st.selectbox("Purpose", ["Gaming", "Editing", "Corporate", "Multitasking"])
+        ram = st.selectbox("RAM (GB)", [8, 16, 32, 64], index=1)
+        refresh = st.selectbox("Refresh Rate", ["60Hz", "120Hz", "144Hz", "240Hz"])
+    with col_b:
+        cpu_choice = st.selectbox("Processor", list(cpu_display_map.values()))
+        cpu_orig = [k for k, v in cpu_display_map.items() if v == cpu_choice][0]
+        gpu = st.selectbox("GPU", encoder_gpu.classes_)
+        weight = st.slider("Weight (kg)", 1.0, 4.0, 1.8)
 
-# 5. LOGIC & PREDICTION
-if st.button("Generate AI Price Quote & Recommendations"):
-    # Sound Script
+# 5. Prediction Logic
+if st.button("Predict Accurate Price"):
+    # Click Sound
     st.components.v1.html("""<audio autoplay><source src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>""", height=0)
     
-    # ML Prediction with Safe CPU mapping
+    # ML Prediction
     cpu_enc = encoder_cpu.transform([cpu_orig])[0]
     gpu_enc = encoder_gpu.transform([gpu])[0]
     base_pred = model.predict(np.array([[ram, weight, cpu_enc, gpu_enc]]))[0]
     
-    # --- CALIBRATION LOGIC ---
-    # 1. Refresh Rate Bonus
-    refresh_val = int(refresh_rate.replace("Hz", "").replace("+", ""))
-    hz_bonus = (refresh_val - 60) * 180 
+    # --- REAL-TIME PRICE CALIBRATION ---
+    # Naye processors (i9/Ryzen 9) ke liye model ko accurate banane ka logic
+    final_price = base_pred
+    if cpu_orig == "Intel Core i9" or cpu_orig == "AMD Ryzen 9":
+        final_price += 45000  # i9 ki real market value add karna
     
-    # 2. Purpose Bonus
-    purpose_bonus = 0
-    if purpose == "Professional Editing": purpose_bonus = 18000
-    elif purpose == "Hardcore Gaming": purpose_bonus = 15000
+    # Purpose based cost (Gaming/Editing laptops have premium builds)
+    if purpose == "Gaming": final_price += 15000
+    if purpose == "Editing": final_price += 10000
     
-    # 3. CPU Generation Bonus (Agar i9 ya Ryzen 9 select kiya hai)
-    cpu_bonus = 0
-    if "i9" in cpu_choice or "Ryzen 9" in cpu_choice: cpu_bonus = 30000
-    elif "Ultra 7" in cpu_choice: cpu_bonus = 10000
+    # Refresh Rate cost
+    if "144Hz" in refresh: final_price += 8000
+    if "240Hz" in refresh: final_price += 15000
 
-    # Final Price with 2026 inflation
-    final_price = int((base_pred * 1.15) + hz_bonus + purpose_bonus + cpu_bonus)
+    # 2026 Inflation (12%)
+    final_price = int(final_price * 1.12)
 
     st.balloons()
-    st.markdown(f"<h2 style='text-align: center;'>Estimated 2026 Price: ₹{final_price:,}</h2>", unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align: center;' class='purpose-tag'>Optimized for {purpose} at {refresh_rate}</p>", unsafe_allow_html=True)
-
+    st.markdown(f"<h2 style='text-align: center;'>Market Price: ₹{final_price:,}</h2>", unsafe_allow_html=True)
+    
+    # Suggestions
     st.markdown("---")
-    st.subheader(f"🛒 Top Recommended {purpose} Laptops:")
-
-    # Recommendation Logic
     df['diff'] = abs(df['Price'] - final_price)
     matches = df.sort_values('diff').head(4)
     
     cols = st.columns(4)
     for i, (idx, row) in enumerate(matches.iterrows()):
-        brand = row['Company']
-        img = f"https://source.unsplash.com/400x300/?laptop,{brand.lower()}"
         with cols[i]:
+            img = f"https://source.unsplash.com/400x300/?laptop,{row['Company'].lower()}"
             st.markdown(f"""
                 <div class="card">
-                    <div class="brand-tag">{brand.upper()}</div>
+                    <div class="brand-tag">{row['Company']}</div>
                     <img src="{img}">
-                    <div style="font-weight:bold; height:50px;">{brand} {row['TypeName']}</div>
-                    <p style="font-size:12px; color:gray;">{row['Cpu']}<br>RAM: {row['Ram']}</p>
-                    <p class="purpose-tag">Best for {purpose}</p>
-                    <div class="price-tag">₹{int(row['Price'] * 1.18):,}</div>
+                    <p><b>{row['Company']} {row['TypeName']}</b></p>
+                    <p style='color:gray; font-size:12px;'>{row['Cpu']}</p>
+                    <p class="price-tag">₹{int(row['Price'] * 1.12):,}</p>
                 </div>
                 """, unsafe_allow_html=True)
-            st.link_button("View on Amazon", f"https://www.amazon.in/s?k={brand}+laptop+{purpose}")
+            st.link_button("Amazon Link", f"https://www.amazon.in/s?k={row['Company']}+laptop")
